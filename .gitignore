@@ -1,5 +1,4 @@
 node_modules/
 dist/
-public/thumbs/
 *.local
 .DS_Store

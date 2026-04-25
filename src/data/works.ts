@@ -1,15 +1,15 @@
 import type { WorkItem } from '../types'
 
-// Optimised display WebP (1400px, used in overlay + lightbox)
+// BASE_URL is '/Portfolio/' on GitHub Pages, '/' in dev
+const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+
 const d = (name: string) => {
   const webp = name.replace(/\.(jpg|jpeg|png|JPG|JPEG|PNG)$/, '.webp')
-  return `/display/${webp}`
+  return `${base}/display/${webp}`
 }
-
-// Tiny WebP thumbnail (320px, used in grids)
 const t = (name: string) => {
   const webp = name.replace(/\.(jpg|jpeg|png|JPG|JPEG|PNG)$/, '.webp')
-  return `/thumbs/${webp}`
+  return `${base}/thumbs/${webp}`
 }
 
 export const works: WorkItem[] = [
