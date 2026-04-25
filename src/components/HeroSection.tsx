@@ -10,7 +10,7 @@ export default function HeroSection() {
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '3rem' }}>
           <a href="#posters" className="muted-link">VIEW WORKS ↓</a>
-          <a href="#contact" className="muted-link">GET IN TOUCH →</a>
+          <a href="#contact" className="muted-link">GET IN TOUCH ↓</a>
         </div>
       </div>
       <div className="divider reveal" />
