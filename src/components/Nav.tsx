@@ -4,11 +4,12 @@ import type { Theme } from '../types'
 interface NavProps {
   theme: Theme
   onToggleTheme: () => void
+  onNameClick: () => void
 }
 
 const W = { maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem' }
 
-export default function Nav({ theme, onToggleTheme }: NavProps) {
+export default function Nav({ theme, onToggleTheme, onNameClick }: NavProps) {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen]         = useState(false)
 
@@ -24,7 +25,7 @@ export default function Nav({ theme, onToggleTheme }: NavProps) {
   return (
     <nav className={scrolled ? 'scrolled' : ''}>
       <div style={{ ...W, display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', paddingBottom: '1rem' }}>
-        <a href="#top" className="nav-name" onClick={close}>Hubert Ambroszkiewicz</a>
+        <a href="#top" className="nav-name" onClick={e => { e.preventDefault(); onNameClick() }}>Hubert Ambroszkiewicz</a>
 
         {/* Desktop links */}
         <div className="nav-desktop">
