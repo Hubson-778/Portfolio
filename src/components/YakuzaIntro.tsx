@@ -4,121 +4,117 @@ interface YakuzaIntroProps {
   onDone: () => void
 }
 
-/*
-  Sequence:
-  0ms   — overlay appears, screen goes B&W
-  200ms — red horizontal lines flash in
-  500ms — surname slams in from right
-  800ms — first name slams in from left
-  1200ms— hold
-  2200ms— everything fades out
-  2600ms— done
-*/
+// Pre-load the font once at module level so it's ready on first click
+const edoFont = new FontFace('EdoSZ', `url(${import.meta.env.BASE_URL}fonts/edosz.ttf)`)
+edoFont.load().then(f => document.fonts.add(f)).catch(() => {})
 
 export default function YakuzaIntro({ onDone }: YakuzaIntroProps) {
   const [phase, setPhase] = useState(0)
 
-  // Load Edo SZ via FontFace API — handles base path correctly on GitHub Pages
   useEffect(() => {
-    const font = new FontFace('EdoSZ', `url(${import.meta.env.BASE_URL}fonts/edosz.ttf)`)
-    font.load().then(f => document.fonts.add(f)).catch(() => {})
-  }, [])
+    // Desaturate the whole page
+    document.documentElement.style.filter = 'grayscale(1) brightness(0.35)'
 
-  useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 200),
-      setTimeout(() => setPhase(2), 500),
-      setTimeout(() => setPhase(3), 850),
-      setTimeout(() => setPhase(4), 2000),
-      setTimeout(() => { onDone() }, 2600),
+      setTimeout(() => setPhase(1), 250),   // lines appear
+      setTimeout(() => setPhase(2), 600),   // surname slides in
+      setTimeout(() => setPhase(3), 950),   // firstname slides in
+      setTimeout(() => setPhase(4), 2300),  // fade out starts
+      setTimeout(() => {
+        document.documentElement.style.filter = ''
+        onDone()
+      }, 2900),
     ]
-    return () => timers.forEach(clearTimeout)
+
+    return () => {
+      timers.forEach(clearTimeout)
+      document.documentElement.style.filter = ''
+    }
   }, [])
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 999,
-      background: '#000',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      position: 'fixed', inset: 0, zIndex: 9999,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
       overflow: 'hidden',
       opacity: phase >= 4 ? 0 : 1,
       transition: phase >= 4 ? 'opacity 0.55s ease' : 'none',
       pointerEvents: 'all',
     }}>
 
-      {/* Scanline texture */}
+      {/* Vignette only — no black fill, page shows through desaturated */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 0,
-        backgroundImage: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 3px)',
+        background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 100%)',
         pointerEvents: 'none',
       }} />
 
-      {/* Red horizontal slash lines */}
-      {phase >= 1 && (
-        <>
-          <div style={{
-            position: 'absolute', left: 0, right: 0,
-            height: 3, background: '#cc0000',
-            top: '42%', zIndex: 2,
-            transform: phase >= 1 ? 'scaleX(1)' : 'scaleX(0)',
-            transformOrigin: 'left',
-            transition: 'transform 0.18s ease-out',
-            boxShadow: '0 0 12px rgba(200,0,0,0.8)',
-          }} />
-          <div style={{
-            position: 'absolute', left: 0, right: 0,
-            height: 3, background: '#cc0000',
-            top: '58%', zIndex: 2,
-            transform: phase >= 1 ? 'scaleX(1)' : 'scaleX(0)',
-            transformOrigin: 'right',
-            transition: 'transform 0.18s ease-out 0.06s',
-            boxShadow: '0 0 12px rgba(200,0,0,0.8)',
-          }} />
-        </>
-      )}
-
-      {/* Surname — slams in from right */}
+      {/* Scanlines */}
       <div style={{
-        position: 'absolute', zIndex: 3,
-        top: '44%',
-        right: phase >= 2 ? '8%' : '-100%',
-        transition: phase >= 2 ? 'right 0.22s cubic-bezier(0.2,0,0.3,1)' : 'none',
+        position: 'absolute', inset: 0, zIndex: 0,
+        backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0px, rgba(0,0,0,0.12) 1px, transparent 1px, transparent 4px)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Top slash line */}
+      <div style={{
+        position: 'absolute', left: 0, right: 0,
+        top: 'calc(50% - 60px)', height: 2, zIndex: 1,
+        background: 'linear-gradient(90deg, transparent, #cc0000 15%, #ff2200 50%, #cc0000 85%, transparent)',
+        boxShadow: '0 0 16px rgba(200,0,0,0.8)',
+        transformOrigin: 'left center',
+        transform: phase >= 1 ? 'scaleX(1)' : 'scaleX(0)',
+        opacity: phase >= 1 ? 1 : 0,
+        transition: 'transform 0.22s cubic-bezier(0.2,0,0.1,1), opacity 0.15s ease',
+      }} />
+
+      {/* Bottom slash line */}
+      <div style={{
+        position: 'absolute', left: 0, right: 0,
+        top: 'calc(50% + 60px)', height: 2, zIndex: 1,
+        background: 'linear-gradient(90deg, transparent, #cc0000 15%, #ff2200 50%, #cc0000 85%, transparent)',
+        boxShadow: '0 0 16px rgba(200,0,0,0.8)',
+        transformOrigin: 'right center',
+        transform: phase >= 1 ? 'scaleX(1)' : 'scaleX(0)',
+        opacity: phase >= 1 ? 1 : 0,
+        transition: 'transform 0.22s cubic-bezier(0.2,0,0.1,1) 0.07s, opacity 0.15s ease 0.07s',
+      }} />
+
+      {/* Surname — centred, slides in from right */}
+      <div style={{
+        position: 'relative', zIndex: 2,
+        marginBottom: '0.2em',
         fontFamily: '"EdoSZ", serif',
-        fontSize: 'clamp(2.8rem, 7vw, 6rem)',
-        fontWeight: 900,
+        fontSize: 'clamp(2.2rem, 6vw, 5.5rem)',
         color: '#cc0000',
-        letterSpacing: '0.08em',
+        letterSpacing: '0.06em',
         textTransform: 'uppercase',
-        textShadow: '0 0 30px rgba(200,0,0,0.6), 2px 2px 0 #000',
+        textShadow: '0 0 40px rgba(200,0,0,0.6), 2px 2px 0 #000',
         whiteSpace: 'nowrap',
+        opacity: phase >= 2 ? 1 : 0,
+        transform: phase >= 2 ? 'translateX(0)' : 'translateX(80px)',
+        transition: 'transform 0.3s cubic-bezier(0.15,0,0.2,1), opacity 0.2s ease',
       }}>
         Ambroszkiewicz
       </div>
 
-      {/* First name — slams in from left */}
+      {/* First name — centred, slides in from left */}
       <div style={{
-        position: 'absolute', zIndex: 3,
-        bottom: '38%',
-        left: phase >= 3 ? '8%' : '-100%',
-        transition: phase >= 3 ? 'left 0.22s cubic-bezier(0.2,0,0.3,1)' : 'none',
+        position: 'relative', zIndex: 2,
         fontFamily: '"EdoSZ", serif',
-        fontSize: 'clamp(2rem, 5vw, 4.2rem)',
-        fontWeight: 700,
-        color: '#fff',
+        fontSize: 'clamp(1.6rem, 4vw, 3.8rem)',
+        color: '#cc0000',
         letterSpacing: '0.18em',
         textTransform: 'uppercase',
-        textShadow: '0 0 20px rgba(255,255,255,0.3), 2px 2px 0 #000',
+        textShadow: '0 0 30px rgba(200,0,0,0.6), 2px 2px 0 #000',
         whiteSpace: 'nowrap',
+        opacity: phase >= 3 ? 1 : 0,
+        transform: phase >= 3 ? 'translateX(0)' : 'translateX(-80px)',
+        transition: 'transform 0.3s cubic-bezier(0.15,0,0.2,1), opacity 0.2s ease',
       }}>
         Hubert
       </div>
-
-      {/* Vignette */}
-      <div style={{
-        position: 'absolute', inset: 0, zIndex: 1,
-        background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.85) 100%)',
-        pointerEvents: 'none',
-      }} />
     </div>
   )
 }
